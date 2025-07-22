@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { initCity } from "./City.js";
+
+      // サイズを指定
+      const width = 1280; // 画面の幅
+      const height = 720; // 画面の高さ
+
+      // レンダラーを作成
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector("#myCanvas"),
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+
+      // シーンを作成
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xCCFFCC); // 背景色を薄い緑色に設定
+
+      // カメラ・コントロールをcamera.jsから取得
+      const canvas = document.querySelector('#myCanvas');
+      const { camera, controls } = createCamera(width, height, canvas);
+
+
+      // デバッグ用点光源を作成
+      // new THREE.PointLight(色, 光の強さ, 距離, 光の減衰率)
+      const light = new THREE.PointLight(0xFFFFFF, 500, 500, 1.0);
+      light.position.set(0, 50, -10); // 光源の位置を設定
+      scene.add(light);
+      
+      // City初期化（モデル・テキスト生成もまとめてCity.jsで管理）
+      await initCity(scene);
+
+
+      //デバッグ用
+      import { createCamera, saveCameraState, addDebugGrids } from "./Debug.js";
+      addDebugGrids(scene);
+
+      tick();
+
+      // 毎フレーム時に実行されるループイベントです
+      function tick() {
+
+        controls.update();
+        saveCameraState(camera, controls);
+
+        renderer.render(scene, camera); // レンダリング
+        requestAnimationFrame(tick);
+      }
+
+      // デバッグ時OFF
+      // let move = 0; // カメラの前後移動量
+      // let isMouseDown = false;
+
+      // document.body.onmousedown = () => { isMouseDown = true; };
+      // document.body.onmouseup = () => { isMouseDown = false; };
+
+      // function MouseDown() {
+      //   if (isMouseDown) {
+      //     move += 0.1; // マウスが押されている間、カメラを前に移動
+      //     camera.position.z = 5 - move; // マウスが押されている間、カメラを前に移動
+      //     if (move % 5.0 > 3.0 && move % 5.0 < 5.0) {
+      //       camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
+      //     }else if (move % 5.0 > 0.0 && move % 5.0 < 2.0) {
+      //       camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
+      //     }
+      //   }
+      //   requestAnimationFrame(MouseDown);
+      // }
+      // MouseDown();
+
+    </script>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #222;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" style="pointer-events:auto; touch-action:none;"></canvas>
+  </body>
+</html>
