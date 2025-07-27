@@ -11,7 +11,13 @@
     </script>
     <script type="module">
       import * as THREE from "three";
+      import { getPlace } from "./Words.js";
+      import { createCamera, saveCameraState, addDebugGrids } from "./Debug.js";
+      const chimei = getPlace();
+      window.chimei = chimei; // グローバル変数として設定
+
       import { initCity } from "./City.js";
+      import { initStation } from "./Station.js";
 
       // サイズを指定
       const width = 1280; // 画面の幅
@@ -26,59 +32,139 @@
 
       // シーンを作成
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xCCFFCC); // 背景色を薄い緑色に設定
-
-      // カメラ・コントロールをcamera.jsから取得
-      const canvas = document.querySelector('#myCanvas');
-      const { camera, controls } = createCamera(width, height, canvas);
-
 
       // デバッグ用点光源を作成
       // new THREE.PointLight(色, 光の強さ, 距離, 光の減衰率)
       const light = new THREE.PointLight(0xFFFFFF, 500, 500, 1.0);
-      light.position.set(0, 50, -10); // 光源の位置を設定
+      light.position.set(0, 50, 0); // 光源の位置を設定
       scene.add(light);
       
       // City初期化（モデル・テキスト生成もまとめてCity.jsで管理）
-      await initCity(scene);
 
+      let stage = 1;
+      if (stage == 1){
+        await initCity(scene);
+      } else if (stage == 2) {
+        await initStation(scene);
+      }
 
-      //デバッグ用
-      import { createCamera, saveCameraState, addDebugGrids } from "./Debug.js";
+      let debug = false;
+      if(debug == true) { //デバッグ用
+      scene.background = new THREE.Color(0xCCFFCC); // 背景色を薄い緑色に設定
+      const canvas = document.querySelector('#myCanvas');
+      const { camera, controls } = createCamera(width, height, canvas);
       addDebugGrids(scene);
-
       tick();
-
-      // 毎フレーム時に実行されるループイベントです
       function tick() {
-
         controls.update();
         saveCameraState(camera, controls);
-
         renderer.render(scene, camera); // レンダリング
         requestAnimationFrame(tick);
       }
+    }
 
-      // デバッグ時OFF
-      // let move = 0; // カメラの前後移動量
-      // let isMouseDown = false;
+      if(debug == false) { //デバッグ用ではない場合
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); // カメラを作成
+        camera.position.set(0, 1.7, 0);
+        scene.add(camera);
+        camera.fov = 110;
+        camera.updateProjectionMatrix(); // カメラの投影行列を更新
+        
+        scene.background = new THREE.Color(0xFFFFFF);
+        tick();
+        function tick() { // 毎フレーム時に実行されるループイベントです
+          renderer.render(scene, camera); // レンダリング
+          requestAnimationFrame(tick);
+        }
 
-      // document.body.onmousedown = () => { isMouseDown = true; };
-      // document.body.onmouseup = () => { isMouseDown = false; };
+        let move = 0;
+        let isMouseDown = false;
 
-      // function MouseDown() {
-      //   if (isMouseDown) {
-      //     move += 0.1; // マウスが押されている間、カメラを前に移動
-      //     camera.position.z = 5 - move; // マウスが押されている間、カメラを前に移動
-      //     if (move % 5.0 > 3.0 && move % 5.0 < 5.0) {
-      //       camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
-      //     }else if (move % 5.0 > 0.0 && move % 5.0 < 2.0) {
-      //       camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
-      //     }
-      //   }
-      //   requestAnimationFrame(MouseDown);
-      // }
-      // MouseDown();
+        document.body.onmousedown = () => { isMouseDown = true; };
+        document.body.onmouseup = () => { isMouseDown = false; };
+
+        function MouseDown() {
+          if (isMouseDown) {
+
+            if(stage == 1) { //city
+              if (move < 70) {
+              move += 0.07; // マウスが押されている間、カメラを前に移動
+              }
+              camera.position.z = 0 - move; // マウスが押されている間、カメラを前に移動
+              if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
+                camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
+              }else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
+                camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
+              }
+              if (move >= 70) {
+                setTimeout(() => {
+                  const startRotation = camera.rotation.y;
+                  const targetRotation = Math.PI / 2; // 90度
+                  const duration = 3000; // 3秒
+                  const startTime = performance.now();
+
+                  function animateRotation(now) {
+                    const elapsed = now - startTime;
+                    if (elapsed < duration) {
+                      camera.rotation.y = startRotation + (targetRotation - startRotation) * (elapsed / duration);
+                      requestAnimationFrame(animateRotation);
+                    } else {
+                      camera.rotation.y = targetRotation;
+                    }
+                  }
+                  requestAnimationFrame(animateRotation);
+                }, 2000);
+              }
+
+            } else if (stage == 2) { //station
+              if (move < 34) {
+              move += 0.05; // マウスが押されている間、カメラを前に移動
+              }
+              camera.position.z = -move; // マウスが押されている間、カメラを前に移動
+              if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
+                camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
+              }else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
+                camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
+              }
+              if (move > 19 && move < 25){
+                camera.position.y += 0.029;
+              }
+              if (move >= 34) {
+                setTimeout(() => {
+                  const startRotation = camera.rotation.y;
+                  const targetRotation = Math.PI / 2; // 90度
+                  const duration = 3000; // 3秒
+                  const startTime = performance.now();
+
+                  function animateRotation(now) {
+                    const elapsed = now - startTime;
+                    if (elapsed < duration) {
+                      camera.rotation.y = startRotation + (targetRotation - startRotation) * (elapsed / duration);
+                      requestAnimationFrame(animateRotation);
+                    } else {
+                      camera.rotation.y = targetRotation;
+                    }
+                  }
+                  requestAnimationFrame(animateRotation);
+                }, 2000);
+              }
+
+            }
+
+          }
+          requestAnimationFrame(MouseDown);
+        }
+        
+
+
+        // cameraのpositionを定期的にconsole.log
+        setInterval(() => {
+          console.log('camera.position:', camera.position);
+        }, 5000);
+
+        MouseDown();
+    }
+  
 
     </script>
     <style>
@@ -92,7 +178,7 @@
       }
     </style>
   </head>
-  <body>
+  <body onselectstart="return false;" onmousedown="return false;">
     <canvas id="myCanvas" style="pointer-events:auto; touch-action:none;"></canvas>
   </body>
 </html>
