@@ -2,8 +2,8 @@ import { createBuilding, createEngSign, createSign, createHyousatsu, createTatem
 import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber, Number4, Koukou1, Koukou2, Koukou3 } from "./Words.js";
 
 export async function initStation(scene) {
-  await loadStationModel(scene);
-  await loadStationWordModel(scene);
+  window.Stationmodel = await loadStationModel(scene);
+  window.StationWordModel = await loadStationWordModel(scene);
 
   let now = new Date();
   let plusDate1 = 1 * 60 * 1000; // 1分（ミリ秒）
@@ -32,19 +32,46 @@ export async function initStation(scene) {
   const Time15 = Time15_1 + ':' + Time15_2;
 
   // Station専用テキスト生成
-  createDot(Time1, new THREE.Vector3(-1.03, 2.8, -7.5), scene, 0.06);
-  createDot(Time3, new THREE.Vector3(1.25, 2.8, -7.5), scene, 0.06);
-  createDot(Time10, new THREE.Vector3(-1.03, 2.7, -7.5), scene, 0.06);
-  createDot(Time15, new THREE.Vector3(1.25, 2.7, -7.5), scene, 0.06);
+  window.stationDotMeshes = [];
+  window.stationDotMeshes.push(
+    createDot(Time1, new THREE.Vector3(-1.03, 2.8, -7.5), scene, 0.06),
+    createDot(Time3, new THREE.Vector3(1.25, 2.8, -7.5), scene, 0.06),
+    createDot(Time10, new THREE.Vector3(-1.03, 2.7, -7.5), scene, 0.06),
+    createDot(Time15, new THREE.Vector3(1.25, 2.7, -7.5), scene, 0.06)
+  );
 
 }
+
+export async function StationRemove(scene) {
+  // シーンからStationモデルを削除
+  // loadStationModelで追加したStationmodelを削除する
+  // Stationmodelの参照を保持するため、グローバル変数として管理
+  if (window.Stationmodel) {
+    scene.remove(window.Stationmodel);
+    window.Stationmodel = null;
+  }
+  // StationWordモデル削除
+  if (window.StationWordModel) {
+    scene.remove(window.StationWordModel);
+    window.StationWordModel = null;
+  }
+  if (window.stationDotMeshes && Array.isArray(window.stationDotMeshes)) {
+    window.stationDotMeshes.forEach(mesh => {
+      if (mesh && mesh.isMesh) {
+        scene.remove(mesh);
+      }
+    });
+    window.stationDotMeshes = [];
+  }
+}
+
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 export const loader = new GLTFLoader();
-const materialWhite = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
-// const materialWhite = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+// const materialWhite = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
+const materialWhite = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
 
 export async function loadStationModel(scene) {
   const Station = await loader.loadAsync('./models/Station.gltf');

@@ -1,184 +1,107 @@
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"
-        }
-      }
-    </script>
-    <script type="module">
-      import * as THREE from "three";
-      import { getPlace } from "./Words.js";
-      import { createCamera, saveCameraState, addDebugGrids } from "./Debug.js";
-      const chimei = getPlace();
-      window.chimei = chimei; // グローバル変数として設定
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字街</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Kiwi+Maru&family=Kosugi&family=M+PLUS+1+Code:wght@100..700&family=M+PLUS+Rounded+1c&family=Manrope:wght@200..800&family=Mochiy+Pop+One&family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=WDXL+Lubrifont+JP+N&family=Zen+Maru+Gothic&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
 
-      import { initCity } from "./City.js";
-      import { initStation } from "./Station.js";
+    <script>
+    // var canvas = document.getElementById("whiteCanvas");
+    // var context = canvas.getContext("2d");
 
-      // サイズを指定
-      const width = 1280; // 画面の幅
-      const height = 720; // 画面の高さ
-
-      // レンダラーを作成
-      const renderer = new THREE.WebGLRenderer({
-        canvas: document.querySelector("#myCanvas"),
-      });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(width, height);
-
-      // シーンを作成
-      const scene = new THREE.Scene();
-
-      // デバッグ用点光源を作成
-      // new THREE.PointLight(色, 光の強さ, 距離, 光の減衰率)
-      const light = new THREE.PointLight(0xFFFFFF, 500, 500, 1.0);
-      light.position.set(0, 50, 0); // 光源の位置を設定
-      scene.add(light);
-      
-      // City初期化（モデル・テキスト生成もまとめてCity.jsで管理）
-
-      let stage = 1;
-      if (stage == 1){
-        await initCity(scene);
-      } else if (stage == 2) {
-        await initStation(scene);
-      }
-
-      let debug = false;
-      if(debug == true) { //デバッグ用
-      scene.background = new THREE.Color(0xCCFFCC); // 背景色を薄い緑色に設定
-      const canvas = document.querySelector('#myCanvas');
-      const { camera, controls } = createCamera(width, height, canvas);
-      addDebugGrids(scene);
-      tick();
-      function tick() {
-        controls.update();
-        saveCameraState(camera, controls);
-        renderer.render(scene, camera); // レンダリング
-        requestAnimationFrame(tick);
-      }
+    function fillWhiteCanvas(r = 0, g = 0, b = 0, alpha = 1) {
+      context.clearRect(0, 0, canvas.width, canvas.height); // 前の描画を消す
+      context.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      context.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-      if(debug == false) { //デバッグ用ではない場合
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); // カメラを作成
-        camera.position.set(0, 1.7, 0);
-        scene.add(camera);
-        camera.fov = 110;
-        camera.updateProjectionMatrix(); // カメラの投影行列を更新
-        
-        scene.background = new THREE.Color(0xFFFFFF);
-        tick();
-        function tick() { // 毎フレーム時に実行されるループイベントです
-          renderer.render(scene, camera); // レンダリング
-          requestAnimationFrame(tick);
+    function WhiteOut() {
+      const duration = 3000; // 3秒
+      const startTime = performance.now();
+      function animate(now) {
+        const elapsed = now - startTime;
+        let a = Math.min(elapsed / duration, 1); // 0〜1まで線形で増加
+        fillWhiteCanvas(0, 0, 0, a); // 半透明の黒
+        if (a < 1) {
+          requestAnimationFrame(animate);
         }
+      }
+      requestAnimationFrame(animate);
+    }
 
-        let move = 0;
-        let isMouseDown = false;
-
-        document.body.onmousedown = () => { isMouseDown = true; };
-        document.body.onmouseup = () => { isMouseDown = false; };
-
-        function MouseDown() {
-          if (isMouseDown) {
-
-            if(stage == 1) { //city
-              if (move < 70) {
-              move += 0.07; // マウスが押されている間、カメラを前に移動
-              }
-              camera.position.z = 0 - move; // マウスが押されている間、カメラを前に移動
-              if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
-                camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
-              }else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
-                camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
-              }
-              if (move >= 70) {
-                setTimeout(() => {
-                  const startRotation = camera.rotation.y;
-                  const targetRotation = Math.PI / 2; // 90度
-                  const duration = 3000; // 3秒
-                  const startTime = performance.now();
-
-                  function animateRotation(now) {
-                    const elapsed = now - startTime;
-                    if (elapsed < duration) {
-                      camera.rotation.y = startRotation + (targetRotation - startRotation) * (elapsed / duration);
-                      requestAnimationFrame(animateRotation);
-                    } else {
-                      camera.rotation.y = targetRotation;
-                    }
-                  }
-                  requestAnimationFrame(animateRotation);
-                }, 2000);
-              }
-
-            } else if (stage == 2) { //station
-              if (move < 34) {
-              move += 0.05; // マウスが押されている間、カメラを前に移動
-              }
-              camera.position.z = -move; // マウスが押されている間、カメラを前に移動
-              if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
-                camera.position.y -= (move % 0.5) * 0.05; // 少しずつ上に移動
-              }else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
-                camera.position.y += (move % 0.5) * 0.05; // 元の高さに戻す
-              }
-              if (move > 19 && move < 25){
-                camera.position.y += 0.029;
-              }
-              if (move >= 34) {
-                setTimeout(() => {
-                  const startRotation = camera.rotation.y;
-                  const targetRotation = Math.PI / 2; // 90度
-                  const duration = 3000; // 3秒
-                  const startTime = performance.now();
-
-                  function animateRotation(now) {
-                    const elapsed = now - startTime;
-                    if (elapsed < duration) {
-                      camera.rotation.y = startRotation + (targetRotation - startRotation) * (elapsed / duration);
-                      requestAnimationFrame(animateRotation);
-                    } else {
-                      camera.rotation.y = targetRotation;
-                    }
-                  }
-                  requestAnimationFrame(animateRotation);
-                }, 2000);
-              }
-
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("submitButton").addEventListener("click", function() {
+            const name = document.getElementById("inputText").value;
+            if (name) {
+            window.name = name;
+            // WhiteOut();
+            //whiteout後にModelLoad.htmlに飛ぶ
+            // setTimeout(() => {
+                window.location.href = "ModelLoad.html";
+            // }, 3000); // 3秒後にリダイレクト
+            } else {
+                document.getElementById("message").innerText = "！！！ 名前を入力してください ！！！";
             }
-
-          }
-          requestAnimationFrame(MouseDown);
-        }
-        
-
-
-        // cameraのpositionを定期的にconsole.log
-        setInterval(() => {
-          console.log('camera.position:', camera.position);
-        }, 5000);
-
-        MouseDown();
-    }
-  
+        });
+    });
 
     </script>
+</head>
+<body>
+    <canvas id="whiteCanvas" width="1280" height="720" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:10;"></canvas>
+    <p>あなたの名字を教えてください。</p>
+    <input type="text" id="inputText" placeholder="ここに入力">
+    <button id="submitButton">決定</button>
+    <p id="message" class="sentence"></p>
+    <!-- <p>入力したデータはこのサイトでのみ使用されます。</p> -->
+
     <style>
-      body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #222;
-      }
+        body {
+            font-family: Hina Mincho, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #000000;
+            padding: 20px;
+        }
+
+        input[type="text"] {
+            width: 50vw;
+            padding: 10px;
+            margin-right: 10px;
+            font-size: 10vw;
+            font-family: Hina Mincho, sans-serif;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #000000;
+            color: white;
+            border: 1px solid #000000;
+            cursor: pointer;
+            margin: 1%;
+            font-family: Hina Mincho, sans-serif;
+            font-size: 3vw;
+        }
+        button:hover {
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+        }
+        p{
+            font-size: 3vw;
+            margin: 1%;
+        }
+        .sentence {
+            color: white;
+            background-color: #000000;
+        }
     </style>
-  </head>
-  <body onselectstart="return false;" onmousedown="return false;">
-    <canvas id="myCanvas" style="pointer-events:auto; touch-action:none;"></canvas>
-  </body>
+</body>
 </html>

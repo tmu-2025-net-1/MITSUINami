@@ -2,8 +2,8 @@ import { createBuilding, createEngSign, createSign, createHyousatsu, createTatem
 import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber, Number4, Koukou1, Koukou2, Koukou3 } from "./Words.js";
 
 export async function initCity(scene) {
-  await loadCityModel(scene);
-  await loadStopModel(scene);
+  window.Citymodel = await loadCityModel(scene);
+  window.StopModel = await loadStopModel(scene);
   // await loadTrackModel(-35, 0, 0, scene);
 
   // // City専用テキスト生成
@@ -31,6 +31,21 @@ export async function initCity(scene) {
   // createSign("自転車を除く", new THREE.Vector3(-0.8, 2.2, -77), scene, 0.15, 0);
   // createSign("止まれ", new THREE.Vector3(-0.8, 3.5, -77), scene, 0.1, 0);
   // createTatemaru(getPlace() + "町掲示板", new THREE.Vector3(-4.1, 1.85, -0.75), scene, 0.13, Math.PI / 2);
+}
+
+export async function CityRemove(scene) {
+  // シーンからCityモデルを削除
+  // loadCityModelで追加したCitymodelを削除する
+  // Citymodelの参照を保持するため、グローバル変数として管理
+  if (window.Citymodel) {
+    scene.remove(window.Citymodel);
+    window.Citymodel = null;
+  }
+  // stopモデル削除
+  if (window.StopModel) {
+    scene.remove(window.StopModel);
+    window.StopModel = null;
+  }
 }
 
 import * as THREE from "three";
