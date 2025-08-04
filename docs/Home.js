@@ -1,19 +1,12 @@
 import { createBuilding, createEngSign, createSign, createHyousatsu, createTatemaru, createNumber, createPop, createNumberPlate, createNumberPlate2, createDot, Tategaki} from "./Text.js";
-import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber, Number4, Koukou1, Koukou2, Koukou3 } from "./Words.js";
 
-const name = window.name;
+const name = window.name || "苗字";
 
 export async function initHome(scene) {
   await loadHomeModel(scene);
   await loadHomeWordModel(scene);
 
-  if(name !== null)
-  {
-    createHyousatsu(name, new THREE.Vector3(0.4, 1.5, -37.3), scene, 0.1, 0);
-  }else
-  {
-    createHyousatsu(名字名字名, new THREE.Vector3(0, 1.3, -37.3), scene, 0.1, 0);
-  }
+  createHyousatsu(name, new THREE.Vector3(0.4, 1.5, -37.3), scene, 0.1, 0);
 }
 
 import * as THREE from "three";

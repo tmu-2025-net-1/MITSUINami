@@ -1,5 +1,6 @@
-import { createBuilding, createEngSign, createSign, createHyousatsu, createTatemaru, createNumber, createPop, createNumberPlate, createNumberPlate2, createDot, Tategaki} from "./Text.js";
-import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber, Number4, Koukou1, Koukou2, Koukou3 } from "./Words.js";
+import { createBuilding, createEngSign, createSign, createHyousatsu, createTatemaru, createNumber, createPop, createNumberPlate, createNumberPlate2, createDot, Tategaki, createGothic} from "./Text.js";
+
+const station = window.station || "匹重";
 
 export async function initStation(scene) {
   window.Stationmodel = await loadStationModel(scene);
@@ -35,11 +36,22 @@ export async function initStation(scene) {
   window.stationDotMeshes = [];
   window.stationDotMeshes.push(
     createDot(Time1, new THREE.Vector3(-1.03, 2.8, -7.5), scene, 0.06),
-    createDot(Time3, new THREE.Vector3(1.25, 2.8, -7.5), scene, 0.06),
     createDot(Time10, new THREE.Vector3(-1.03, 2.7, -7.5), scene, 0.06),
-    createDot(Time15, new THREE.Vector3(1.25, 2.7, -7.5), scene, 0.06)
+    createDot(Time3, new THREE.Vector3(1.25, 2.8, -7.5), scene, 0.06),
+    createDot(Time15, new THREE.Vector3(1.25, 2.7, -7.5), scene, 0.06),
+    createDot(Time3, new THREE.Vector3(0.5, 6.68, -29.92), scene, 0.06),
+    createDot(Time15, new THREE.Vector3(0.5, 6.58, -29.92), scene, 0.06),
+    createGothic(station + "方面", new THREE.Vector3(1.11, 2.93, -7.5), scene, 0.04, 0),
+    createGothic(station + "方面", new THREE.Vector3(0.1, 3.3, -18.2), scene, 0.07, 0),
+    createGothic(station + "方面", new THREE.Vector3(0.09, 6.68, -25.76), scene, 0.07, 0),
+    createGothic(station + "方面", new THREE.Vector3(0.35, 6.81, -29.94), scene, 0.04, 0),
+    createDot(station, new THREE.Vector3(1.5, 2.8, -7.5), scene, 0.05),
+    createDot(station, new THREE.Vector3(1.5, 2.7, -7.5), scene, 0.05),
+    createDot(station, new THREE.Vector3(0.75, 6.68, -29.92), scene, 0.05),
+    createDot(station, new THREE.Vector3(0.75, 6.58, -29.92), scene, 0.05),
+    createDot("各駅停車 " + station, new THREE.Vector3(-2.5, 6.7, -30.8), scene, 0.15, Math.PI / 2),
+    createDot("各駅停車 " + station, new THREE.Vector3(-2.5, 6.7, -37.8), scene, 0.15, Math.PI / 2)
   );
-
 }
 
 export async function StationRemove(scene) {

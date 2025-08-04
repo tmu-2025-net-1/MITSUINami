@@ -7,14 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Kiwi+Maru&family=Kosugi&family=M+PLUS+1+Code:wght@100..700&family=M+PLUS+Rounded+1c&family=Manrope:wght@200..800&family=Mochiy+Pop+One&family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=WDXL+Lubrifont+JP+N&family=Zen+Maru+Gothic&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+    <script type="module">
+    
+    var canvas = document.getElementById("whiteCanvas");
+    var context = canvas.getContext("2d");
+    fillWhiteCanvas(0); // 初期状態は透明
 
-    <script>
-    // var canvas = document.getElementById("whiteCanvas");
-    // var context = canvas.getContext("2d");
-
-    function fillWhiteCanvas(r = 0, g = 0, b = 0, alpha = 1) {
+    function fillWhiteCanvas(alpha) {
       context.clearRect(0, 0, canvas.width, canvas.height); // 前の描画を消す
-      context.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -24,7 +25,7 @@
       function animate(now) {
         const elapsed = now - startTime;
         let a = Math.min(elapsed / duration, 1); // 0〜1まで線形で増加
-        fillWhiteCanvas(0, 0, 0, a); // 半透明の黒
+        fillWhiteCanvas(a); // 半透明の黒
         if (a < 1) {
           requestAnimationFrame(animate);
         }
@@ -34,16 +35,29 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("submitButton").addEventListener("click", function() {
-            const name = document.getElementById("inputText").value;
-            if (name) {
-            window.name = name;
-            // WhiteOut();
-            //whiteout後にModelLoad.htmlに飛ぶ
-            // setTimeout(() => {
-                window.location.href = "ModelLoad.html";
-            // }, 3000); // 3秒後にリダイレクト
-            } else {
-                document.getElementById("message").innerText = "！！！ 名前を入力してください ！！！";
+            const name = document.getElementById("nameText").value;
+            const station = document.getElementById("stationText").value;
+            if (name && station) {
+                window.name = name;
+                window.station = station;
+                WhiteOut();
+                //whiteout後にCityPage.htmlに飛ぶ
+                setTimeout(() => {
+                    window.location.href = "CityPage.html";
+                }, 3000); // 3秒後にリダイレクト
+                } else {
+                    if (!name) {
+                        document.getElementById("message1").innerText = "！！！ 名前を入力してください ！！！";
+                    }
+                    else {
+                        document.getElementById("message1").innerText = ""; // 名前が入力されている場合はメッセージを消す
+                    }
+                    if (!station) {
+                        document.getElementById("message2").innerText = "！！！ 駅名を入力してください ！！！";
+                    }
+                    else {
+                        document.getElementById("message2").innerText = ""; // 駅名が入力されている場合はメッセージを消す
+                    }
             }
         });
     });
@@ -53,10 +67,16 @@
 <body>
     <canvas id="whiteCanvas" width="1280" height="720" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:10;"></canvas>
     <p>あなたの名字を教えてください。</p>
-    <input type="text" id="inputText" placeholder="ここに入力">
+    <input type="text" id="nameText" placeholder="ここに入力">
+    <p>あなたのよく使う駅名を教えてください。</p>
+    <div class="station-row">
+      <input type="text" id="stationText" placeholder="ここに入力">
+      <p>駅</p>
+    </div>
     <button id="submitButton">決定</button>
-    <p id="message" class="sentence"></p>
-    <!-- <p>入力したデータはこのサイトでのみ使用されます。</p> -->
+    <p id="message1" class="sentence"></p>
+    <p id="message2" class="sentence"></p>
+    <p>入力したデータはこのサイトでのみ使用されます。</p>
 
     <style>
         body {
@@ -66,7 +86,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            height: 100%;
             color: #000000;
             padding: 20px;
         }
@@ -75,7 +95,7 @@
             width: 50vw;
             padding: 10px;
             margin-right: 10px;
-            font-size: 10vw;
+            font-size: 10vh;
             font-family: Hina Mincho, sans-serif;
             text-align: center;
         }
@@ -83,6 +103,8 @@
             outline: none;
             border: 2px solid #000000;
         }
+
+
         button {
             padding: 10px 15px;
             background-color: #000000;
@@ -98,8 +120,20 @@
             color: #000000;
             border: 1px solid #000000;
         }
+        .station-row {
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+        }
+        .station-row input[type="text"] {
+            margin-right: 0;
+        }
+        .station-row p {
+            margin: 0;
+            font-size: 2vw;
+        }
         p{
-            font-size: 3vw;
+            font-size: 2vw;
             margin: 1%;
         }
         .sentence {
@@ -107,5 +141,6 @@
             background-color: #000000;
         }
     </style>
+
 </body>
 </html>

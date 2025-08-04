@@ -1,5 +1,4 @@
 import { createBuilding, createEngSign, createSign, createHyousatsu, createTatemaru, createNumber, createPop, createNumberPlate, createNumberPlate2, Tategaki} from "./Text.js";
-import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber, Number4, Koukou1, Koukou2, Koukou3 } from "./Words.js";
 
 export async function initCity(scene) {
   window.Citymodel = await loadCityModel(scene);

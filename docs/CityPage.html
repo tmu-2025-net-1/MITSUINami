@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Kiwi+Maru&family=Kosugi&family=M+PLUS+1+Code:wght@100..700&family=M+PLUS+Rounded+1c&family=Manrope:wght@200..800&family=Mochiy+Pop+One&family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=WDXL+Lubrifont+JP+N&family=Zen+Maru+Gothic&family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+    <title>文字街</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/"
+      }
+    }
+    </script>
+    <script type="module">
+    let overlayActive = true;
+    document.addEventListener('DOMContentLoaded', function() {
+      const overlay = document.getElementById('howto-overlay');
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          overlay.style.opacity = 0;
+          setTimeout(() => {
+            overlay.style.display = 'none';
+            overlayActive = false; // オーバーレイ非表示後にMouseDown有効化
+          }, 500);
+          e.stopPropagation(); // クリックイベントの伝播を防ぐ
+        });
+      }
+    });
+      import * as THREE from "three";
+      import { createCamera, saveCameraState, addDebugGrids } from "./Debug.js";
+      import { initCity } from "./City.js";
+
+      // サイズを指定
+      const width = 1280; // 画面の幅
+      const height = 720; // 画面の高さ
+
+      // レンダラーを作成
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector("#myCanvas"),
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+
+      // シーンを作成
+      const scene = new THREE.Scene();
+
+      // デバッグ用点光源を作成
+      // new THREE.PointLight(色, 光の強さ, 距離, 光の減衰率)
+      const light = new THREE.PointLight(0xFFFFFF, 500, 500, 1.0);
+      light.position.set(0, 50, 0); // 光源の位置を設定
+      scene.add(light);
+      
+      // City初期化（モデル・テキスト生成もまとめてCity.jsで管理）
+
+      await initCity(scene);
+      
+      let debug = false;
+
+
+    if (debug == true) { //デバッグ用
+      scene.background = new THREE.Color(0xCCFFCC); // 背景色を薄い緑色に設定
+      const canvas = document.querySelector('#myCanvas');
+      const { camera, controls } = createCamera(width, height, canvas);
+      addDebugGrids(scene);
+      tick();
+      function tick() {
+        controls.update();
+        saveCameraState(camera, controls);
+        renderer.render(scene, camera); // レンダリング
+        requestAnimationFrame(tick);
+      }
+    }
+
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000); // カメラを作成
+    let move = 0;
+    let Stageflag = false; // ステージフラグ
+
+    if (debug == false) { //デバッグ用ではない場合
+      camera.position.set(0, 1.7, 0);
+      scene.add(camera);
+      camera.fov = 45;
+      camera.updateProjectionMatrix(); // カメラの投影行列を更新
+
+      scene.background = new THREE.Color(0xFFFFFF);
+      tick();
+      function tick() { // 毎フレーム時に実行されるループイベントです
+        renderer.render(scene, camera); // レンダリング
+
+        // moveとStageflagの判定をここで毎フレーム行う
+        if (move >= 65 && Stageflag == false) {
+          Stageflag = true;
+          setTimeout(() => {
+            WhiteOut();
+          }, 1000);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      let isMouseDown = false;
+      document.body.onmousedown = (e) => {
+        if (!overlayActive) {
+          isMouseDown = true;
+        } else {
+          isMouseDown = false;
+        }
+      };
+      document.body.onmouseup = () => { isMouseDown = false; };
+
+      function MouseDown() {
+        if (isMouseDown && Stageflag == false) {
+          if (move < 65) {
+            move += 0.08; // マウスが押されている間、カメラを前に移動
+            camera.position.z = 0 - move; // マウスが押されている間、カメラを前に移動
+            if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
+              camera.position.y -= (move % 0.5) * 0.03; // 少しずつ上に移動
+            } else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
+              camera.position.y += (move % 0.5) * 0.03; // 元の高さに戻す
+            }
+          }
+        }
+        requestAnimationFrame(MouseDown);
+      }
+
+      // cameraのpositionを定期的にconsole.log
+      setInterval(() => {
+        console.log('camera.position:', camera.position);
+      }, 5000);
+
+      requestAnimationFrame(MouseDown);
+
+    }
+
+    let a = 0;
+    let b = 1;
+
+    var canvas = document.getElementById("whiteCanvas");
+    var context = canvas.getContext("2d");
+    fillWhiteCanvas(1); // 初期状態は透明な黒
+    setTimeout(() => {
+      WhiteIn(); // 初期状態は透明な黒からフェードイン
+    }, 100);
+
+    function fillWhiteCanvas(alpha) {
+      context.clearRect(0, 0, canvas.width, canvas.height); // 前の描画を消す
+      context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function WhiteOut() {
+      const duration = 3000; // 3秒
+      const startTime = performance.now();
+      function animate(now) {
+        const elapsed = now - startTime;
+        let a = Math.min(elapsed / duration, 1); // 0〜1まで線形で増加
+        fillWhiteCanvas(a); // 半透明の黒
+        if (a < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      requestAnimationFrame((now) => animate(now));
+      setTimeout(() => {
+        window.location.href = "StationPage.html"; // StationPageへリダイレクト
+      }, duration);
+    }
+
+    function WhiteIn() {
+      const duration = 3000; // 3秒
+      const startTime = performance.now();
+      function animate(now) {
+        const elapsed = now - startTime;
+        let b = 1 - Math.min(elapsed / duration, 1); // 1〜0まで線形で減少
+        fillWhiteCanvas(b); // 半透明の黒
+        if (b < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      requestAnimationFrame((now) => animate(now));
+    }
+
+
+    </script>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #ffffff;
+      }
+      .howto-overlay {
+        font-family: "Hina Mincho", sans-serif;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255,255,255,0.7);
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+        transition: opacity 0.5s;
+      }
+      .howto-overlay p {
+        font-size: 2vw;
+        color: #222;
+        text-align: center;
+        background: rgba(255,255,255,0.0);
+        border-radius: 10px;
+        padding: 2vw 4vw;
+        border: #222 solid 1px;
+      }
+    </style>
+  </head>
+  <body onselectstart="return false;" onmousedown="return false;">
+    <canvas id="myCanvas" style="pointer-events:auto; touch-action:none;"></canvas>
+    <canvas id="whiteCanvas" width="1280" height="720" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:10;"></canvas>
+    <div id="howto-overlay" class="howto-overlay">
+  <p>ここは唯字ヶ丘という街です。<br>この街には文字だけがあります。<br>標識から落書きまで、普段意識しない街に溢れている文字に目を向けてみませんか？<br><br>操作方法<br>画面をクリックしている間前に向かって進むことができます。</p>
+</div>
+  </body>
+</html>

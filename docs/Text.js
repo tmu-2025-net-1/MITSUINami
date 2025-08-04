@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { getHuman, getArchi, getPlace, getHiragana, getCar, smallNumber, bigNumber } from "./Words.js";
 
 export const loader = new GLTFLoader();
 export const fontLoader = new FontLoader();
@@ -16,6 +15,7 @@ export let number = null, numberReady = false, numberQueue = [];
 export let pop = null, popReady = false, popQueue = [];
 export let NumberPlace = null, NumberPlaceReady = false, NumberPlaceQueue = [];
 export let Dot = null, DotReady = false, DotQueue = [];
+export let Gothic = null, GothicReady = false, GothicQueue = [];
 
 const materialBlack = new THREE.MeshBasicMaterial({ color: 0x000000 });
 
@@ -70,6 +70,12 @@ fontLoader.load("./fonts/k8x12L.json", (font) => {
   DotReady = true;
   DotQueue.forEach(args => createDot(...args));
   DotQueue.length = 0;
+});
+fontLoader.load("./fonts/Kosugi.json", (font) => {
+  Gothic = font;
+  GothicReady = true;
+  GothicQueue.forEach(args => createGothic(...args));
+  GothicQueue.length = 0;
 });
 
 export function Tategaki(str) {
@@ -292,6 +298,29 @@ export function createDot(text, position, scene, size = 0.2, rotationY = 0) {
     bevelSegments: 3
   });
   geometry.center();
+  const mesh = new THREE.Mesh(geometry, materialBlack);
+  mesh.position.copy(position);
+  mesh.rotation.y = rotationY;
+  scene.add(mesh);
+  return mesh; // Return the mesh for further manipulation if needed
+}
+export function createGothic(text, position, scene, size = 0.2, rotationY = 0) {
+  if (!GothicReady) {
+    GothicQueue.push([text, position, scene, size, rotationY]);
+    return;
+  }
+  const geometry = new TextGeometry(text, {
+    font: Gothic,
+    size: size,
+    depth: 0,
+    height: 0.1,
+    curveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0,
+    bevelSize: 0,
+    bevelSegments: 3
+  });
+  // geometry.center();
   const mesh = new THREE.Mesh(geometry, materialBlack);
   mesh.position.copy(position);
   mesh.rotation.y = rotationY;
