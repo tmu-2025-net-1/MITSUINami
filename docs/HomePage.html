@@ -19,8 +19,8 @@
       import { initHome } from "./Home.js";
 
       // サイズを指定
-      const width = 1280; // 画面の幅
-      const height = 720; // 画面の高さ
+      const width = 1500; // 画面の幅
+      const height = 800; // 画面の高さ
 
       // レンダラーを作成
       const renderer = new THREE.WebGLRenderer({
@@ -64,7 +64,7 @@
     let Stageflag = false; // ステージフラグ
 
     if (debug == false) { //デバッグ用ではない場合
-      camera.position.set(0, 1.7, 0);
+      camera.position.set(0, 1.7, -9);
       scene.add(camera);
       camera.fov = 45;
       camera.updateProjectionMatrix(); // カメラの投影行列を更新
@@ -74,7 +74,7 @@
       function tick() { // 毎フレーム時に実行されるループイベントです
         renderer.render(scene, camera); // レンダリング
         // moveとStageflagの判定をここで毎フレーム行う
-        if (move >= 36.3 && Stageflag == false) {
+        if (move >= 36.3 - 9 && Stageflag == false) {
           Stageflag = true;
           RotateCamera(); // カメラを回転させる
         }
@@ -87,9 +87,9 @@
 
       function MouseDown() {
         if (isMouseDown && Stageflag == false) {
-          if (move < 36.7) {
+          if (move < 36.7 - 9) {
             move += 0.05; // マウスが押されている間、カメラを前に移動
-            camera.position.z = 0 - move; // マウスが押されている間、カメラを前に移動
+            camera.position.z = -9 - move; // マウスが押されている間、カメラを前に移動
             if (move % 3.0 > 2.0 && move % 3.0 < 3.0) {
               camera.position.y -= (move % 0.5) * 0.03; // 少しずつ上に移動
             } else if (move % 3.0 > 0.0 && move % 3.0 < 1.0) {
@@ -123,12 +123,17 @@
               } else {
                 camera.rotation.x = targetRotation;
                 // カメラ回転が終わった後に一秒間を開けてテキストフェードインを開始
-                setTimeout(() => {
-                  fadeOutP(3000); // 3秒でフェードアウト
                   setTimeout(() => {
-                    WhiteOut();
+                    // WhiteOut();
+
+        const img = document.querySelector('img');
+        img.style.display = 'block';
+        fadeInImage(img);
+        setTimeout(() => {
+          document.querySelector('h1').style.display = 'block'; // h1を表示
+        }, 5000);
+
                   }, 3000); // 3秒後にリダイレクト
-                }, 1000);
               }
             }
             requestAnimationFrame(animateRotation);
@@ -156,20 +161,6 @@
       context.fillStyle = `rgba(0, 0, 0, ${alpha})`;
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
-
-  function fadeOutP(duration = 3000) {
-    const p = document.querySelector('p');
-    const startTime = performance.now();
-    function animate(now) {
-      const elapsed = now - startTime;
-      let alpha = Math.min(elapsed / duration, 1);
-      p.style.opacity = alpha;
-      if (alpha < 1) {
-        requestAnimationFrame(animate);
-      }
-    }
-    requestAnimationFrame(animate);
-  }
 
   function fadeInImage(img, duration = 3000) {
       img.style.opacity = 0; // 初期状態は透明
@@ -206,7 +197,7 @@
         fadeInImage(img);
         setTimeout(() => {
           document.querySelector('h1').style.display = 'block'; // h1を表示
-        }, 1000);
+        }, 5000);
       }, duration);
     }
 
@@ -231,30 +222,22 @@
     <canvas id="myCanvas" style="pointer-events:auto; touch-action:none;"></canvas>
     <canvas id="whiteCanvas" width="1280" height="720" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:10;"></canvas>
     <canvas id="blackCanvas" width="1280" height="720" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:20;"></canvas>
-    <p>世界には文字が溢れている。</p>
     <!-- 画像を表示する -->
-    <img src="../docs/images/thumbnail.png" alt="サムネイル画像">
-    <h1><a href="../docs/CityPage.html">もう一度街を眺める</a></h1>
+    <img src="../docs/images/Logo.png" alt="サムネイル画像">
+    <h1><a href="../docs/CityPage.html">もう一度街を歩く</a></h1>
 
     <style>
-      /* body {
+      body {
         margin: 0;
         height: 100vh;
+        width: 100vw;
         display: flex;
         justify-content: center;
         align-items: center;
-        background:cornsilk;
-      } */
-      p {
-        font-family: 'Hina Mincho', sans-serif;
-        z-index: 25;
-        font-size: x-large;
-        position: fixed;
-        color: black;
-        opacity: 0;
-        right: 1%;
-        bottom: 5%;
+        background: #ffffff; /* 背景色を白に設定 */
+        overflow: hidden; /* スクロールバーを非表示にする */
       }
+
       h1 {
         font-family: 'Hina Mincho', sans-serif;
         z-index: 25;
@@ -270,26 +253,26 @@
       img {
         position: fixed;
         /* display: none; */
-        /* 中央に表示する */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        top: -10%;
+        left: -2%;
         width: 60vw; /* 画像の幅を指定 */
         height: auto; /* 高さは自動調整 */
         z-index: 30; /* 画像のz-indexを設定 */
+        margin: 0%;
+        padding: 0%;
         opacity: 0;
       }
 
       a {
         text-decoration: none; /* 下線を消す */
-        color: white; /* 文字色を白にする */
+        color: rgb(0, 0, 0); /* 文字色を白にする */
       }
       a:hover {
         text-decoration:underline;
-        color: white; /* ホバー時の文字色を黒にする */
+        color: rgb(0, 0, 0); /* ホバー時の文字色を黒にする */
       }
       a:visited {
-        color: white; /* 訪問済みリンクの文字色を白にする */
+        color: rgb(0, 0, 0); /* 訪問済みリンクの文字色を白にする */
       }
 
 

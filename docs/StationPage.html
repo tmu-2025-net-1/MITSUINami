@@ -18,8 +18,8 @@
       import { initStation } from "./Station.js";
 
       // サイズを指定
-      const width = 1280; // 画面の幅
-      const height = 720; // 画面の高さ
+      const width = 1500; // 画面の幅
+      const height = 800; // 画面の高さ
 
       // レンダラーを作成
       const renderer = new THREE.WebGLRenderer({
@@ -192,6 +192,7 @@
         justify-content: center;
         align-items: center;
         background: #ffffff;
+        overflow: hidden; /* スクロールバーを非表示にする */
       }
       
     </style>

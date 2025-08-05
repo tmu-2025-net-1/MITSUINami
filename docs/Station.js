@@ -1,6 +1,6 @@
 import { createBuilding, createEngSign, createSign, createHyousatsu, createTatemaru, createNumber, createPop, createNumberPlate, createNumberPlate2, createDot, Tategaki, createGothic} from "./Text.js";
 
-const station = window.station || "匹重";
+const station = window.station || "東京";
 
 export async function initStation(scene) {
   window.Stationmodel = await loadStationModel(scene);
